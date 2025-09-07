@@ -1,0 +1,14 @@
+# Core API stack
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+pydantic==2.11.7
+python-dotenv==1.1.1
+typing-extensions==4.15.0
+
+# Spark
+pyspark==3.5.0
+py4j==0.10.9.7
+python-dateutil==2.9.0.post0
+
+# HF Inference
+requests==2.32.3

@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  jupyter:
+    image: jupyter/pyspark-notebook:latest
+    container_name: workforce-idqs-jupyter
+    working_dir: /home/jovyan/work
+    ports:
+      - "8888:8888"           # JupyterLab
+      - "4040-4050:4040-4050" # Spark UI range
+    environment:
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN:-hr-demo}
+      - PYTHONPATH=/home/jovyan/work/src
+      - PYSPARK_DRIVER_PYTHON=python
+      - PYSPARK_PYTHON=python
+    volumes:
+      - ./:/home/jovyan/work
+    command: start-notebook.sh --LabApp.token=${JUPYTER_TOKEN:-hr-demo}
+
+  api:
+    image: jupyter/pyspark-notebook:latest
+    container_name: workforce-idqs-api
+    working_dir: /home/jovyan/work
+    depends_on:
+      - jupyter
+    ports:
+      - "8000:8000"           # FastAPI
+    environment:
+      - PYTHONPATH=/home/jovyan/work/src
+      - PYSPARK_DRIVER_PYTHON=python
+      - PYSPARK_PYTHON=python
+      - HF_TOKEN=${HF_TOKEN}          # <-- set in .env or shell
+      - HF_ZS_MODEL=${HF_ZS_MODEL:-facebook/bart-large-mnli}
+    volumes:
+      - ./:/home/jovyan/work
+    command: >
+      bash -lc "
+        pip install --no-cache-dir -r requirements.txt &&
+        uvicorn workforce_api:app --host 0.0.0.0 --port 8000 --reload
+        --reload-exclude 'src/.ipynb_checkpoints/*'
+      "
+

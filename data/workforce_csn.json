@@ -1,0 +1,42 @@
+{
+  "mapping": {
+    "personIdExternal": "personIdExternal",
+    "startDate": "startDate",
+    "status": "status",
+    "division": "division",
+    "department": "department",
+    "location": "location",
+    "managerId": "manager"
+  },
+  "business_terms": {
+    "headcount": "count distinct personIdExternal",
+    "active_employees": "status = 'A'",
+    "tenure": "datediff(coalesce(endDate, today), startDate)/365.25 years"
+  },
+  "columns": [
+    {
+      "name": "personIdExternal",
+      "semantic": "personIdExternal"
+    },
+    {
+      "name": "startDate",
+      "semantic": "startDate"
+    },
+    {
+      "name": "status",
+      "semantic": "status"
+    },
+    {
+      "name": "division",
+      "semantic": "division"
+    },
+    {
+      "name": "department",
+      "semantic": "department"
+    },
+    {
+      "name": "location",
+      "semantic": "location"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "mapping": {
+    "personIdExternal": "personIdExternal",
+    "assignmentStatus": "assignmentStatus",
+    "isPrimary": "isPrimary",
+    "assignmentType": "assignmentType",
+    "standardHours": "standardHours",
+    "division": "division",
+    "department": "department",
+    "startDate": "startDate",
+    "endDate": "endDate"
+  },
+  "business_terms": {
+    "primary_assignment": "isPrimary = true",
+    "active_assignment": "assignmentStatus = 'A'",
+    "full_time": "assignmentType in ('FULL-TIME','FULL TIME','FT')"
+  },
+  "columns": [
+    {
+      "name": "personIdExternal",
+      "semantic": "personIdExternal"
+    },
+    {
+      "name": "assignmentStatus",
+      "semantic": "assignmentStatus"
+    },
+    {
+      "name": "isPrimary",
+      "semantic": "isPrimary"
+    },
+    {
+      "name": "assignmentType",
+      "semantic": "assignmentType"
+    },
+    {
+      "name": "standardHours",
+      "semantic": "standardHours"
+    },
+    {
+      "name": "division",
+      "semantic": "division"
+    },
+    {
+      "name": "department",
+      "semantic": "department"
+    },
+    {
+      "name": "startDate",
+      "semantic": "startDate"
+    },
+    {
+      "name": "endDate",
+      "semantic": "endDate"
+    }
+  ]
+}

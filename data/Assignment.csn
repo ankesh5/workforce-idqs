@@ -1,0 +1,658 @@
+{
+  "definitions": {
+    "successfactors.assignment": {
+      "@EndUserText.label": "SuccessFactors Assignment Service",
+      "@BusinessGlossary.description": "Assignment management service providing employee job assignments, organizational positions, and compensation structures for workforce planning and talent management",
+      "@BusinessGlossary.businessOwner": "Chief Human Resources Officer",
+      "@BusinessGlossary.dataClassification": "Confidential",
+      "@BusinessGlossary.businessPurpose": "Tracks employee roles, responsibilities, and organizational positioning for operational and strategic HR management",
+      "kind": "service"
+    },
+    "successfactors.assignment.Assignment": {
+      "@EndUserText.label": "Employee Assignment",
+      "@UI.HeaderInfo.TypeName": "Assignment",
+      "@UI.HeaderInfo.TypeNamePlural": "Assignments",
+      "@BusinessGlossary.definition": "A specific job assignment that defines an employee's role, position, organizational placement, and compensation structure within the company for a defined time period",
+      "@BusinessGlossary.businessProcess": ["Assignment Management", "Organizational Planning", "Compensation Management", "Workforce Analytics"],
+      "@BusinessGlossary.dataRetention": "10 years after assignment termination for compliance and historical analysis",
+      "@BusinessGlossary.complianceRequirements": ["Fair Labor Standards Act", "Equal Pay Act", "Tax Reporting", "Audit Requirements"],
+      "@BusinessGlossary.businessRules": [
+        "Each employee must have at least one primary assignment",
+        "Only one primary assignment per person at any given time",
+        "Assignment dates cannot overlap for the same position",
+        "All assignments must have valid organizational structure references"
+      ],
+      "kind": "entity",
+      "elements": {
+        "personIdExternal": {
+          "@EndUserText.label": "Person ID External",
+          "@Core.Description": "External Person Identifier",
+          "@BusinessGlossary.definition": "Unique external identifier linking the assignment to a specific employee in the workforce system, establishing the relationship between person and role",
+          "@BusinessGlossary.businessRules": [
+            "Must exist in workforce master data",
+            "Cannot be null or empty",
+            "Used for cross-system integration and reporting",
+            "Immutable once assignment is created"
+          ],
+          "@BusinessGlossary.dataSource": "Workforce Management System",
+          "@BusinessGlossary.relatedEntities": ["Workforce.personIdExternal"],
+          "@BusinessGlossary.businessImpact": "Critical for employee-assignment relationship and payroll processing",
+          "type": "cds.String",
+          "length": 32,
+          "key": true
+        },
+        "assignmentIdExternal": {
+          "@EndUserText.label": "Assignment ID External",
+          "@Core.Description": "External Assignment Identifier",
+          "@BusinessGlossary.definition": "Unique identifier for each specific job assignment, allowing employees to have multiple concurrent or sequential assignments within the organization",
+          "@BusinessGlossary.businessRules": [
+            "Must be unique across all assignments globally",
+            "Cannot be reused even after assignment termination",
+            "Format follows pattern: ASG followed by 6 digits",
+            "System-generated during assignment creation"
+          ],
+          "@BusinessGlossary.examples": ["ASG000001", "ASG123456"],
+          "@BusinessGlossary.usageContext": "Assignment tracking, audit trails, reporting, and integration",
+          "@BusinessGlossary.businessImpact": "Primary key for all assignment-related processes and analytics",
+          "type": "cds.String",
+          "length": 32,
+          "key": true
+        },
+        "startDate": {
+          "@EndUserText.label": "Assignment Start Date",
+          "@Core.Description": "Assignment Effective Start Date",
+          "@BusinessGlossary.definition": "The official date when the employee begins performing duties and responsibilities under this specific assignment, triggering compensation, benefits, and reporting changes",
+          "@BusinessGlossary.businessRules": [
+            "Cannot be more than 90 days in the future",
+            "Must be on or after employee's overall start date",
+            "Used for payroll effective dating",
+            "Triggers organizational chart updates"
+          ],
+          "@BusinessGlossary.businessImpact": "Determines when compensation changes take effect and organizational reporting begins",
+          "@BusinessGlossary.relatedProcesses": ["Payroll Processing", "Benefits Administration", "Organizational Reporting"],
+          "type": "cds.Date",
+          "key": true
+        },
+        "endDate": {
+          "@EndUserText.label": "Assignment End Date",
+          "@Core.Description": "Assignment Effective End Date",
+          "@BusinessGlossary.definition": "The official date when the employee's duties and responsibilities under this specific assignment conclude, either due to transfer, promotion, termination, or assignment completion",
+          "@BusinessGlossary.businessRules": [
+            "Must be greater than start date if populated",
+            "Null for active assignments",
+            "Cannot be in the past for active assignments",
+            "Triggers final assignment-related processes"
+          ],
+          "@BusinessGlossary.businessImpact": "Determines final pay periods and triggers succession planning",
+          "@BusinessGlossary.relatedProcesses": ["Assignment Closure", "Succession Planning", "Final Payroll"],
+          "type": "cds.Date"
+        },
+        "assignmentClass": {
+          "@EndUserText.label": "Assignment Class",
+          "@Core.Description": "Classification of Assignment",
+          "@BusinessGlossary.definition": "High-level categorization that defines the fundamental nature and employment relationship type of the assignment, impacting legal obligations, benefits eligibility, and compensation structure",
+          "@BusinessGlossary.businessRules": [
+            "Must be from approved classification list",
+            "Determines legal employment relationship",
+            "Affects benefits eligibility and tax treatment",
+            "Cannot be changed without HR approval"
+          ],
+          "@BusinessGlossary.validValues": {
+            "REGULAR": "Regular Employment - Standard full-time or part-time employees with ongoing relationship",
+            "TEMPORARY": "Temporary Assignment - Fixed duration assignments with defined end date",
+            "CONTRACT": "Contract Worker - External contractors or consultants providing services",
+            "INTERN": "Internship Program - Student or graduate intern positions with educational component",
+            "CONSULTANT": "External Consultant - Subject matter experts providing specialized expertise"
+          },
+          "@BusinessGlossary.businessImpact": "Determines employment law compliance, benefits eligibility, and tax treatment",
+          "@BusinessGlossary.complianceRequirements": ["IRS Classification Rules", "Department of Labor Regulations"],
+          "type": "cds.String",
+          "length": 32
+        },
+        "assignmentType": {
+          "@EndUserText.label": "Assignment Type",
+          "@Core.Description": "Type of Assignment",
+          "@BusinessGlossary.definition": "Specific work arrangement type that defines the time commitment, schedule expectations, and workload distribution for the assignment",
+          "@BusinessGlossary.businessRules": [
+            "Must align with assignment class",
+            "Determines standard hours calculation",
+            "Affects overtime eligibility",
+            "Used for workforce planning and budgeting"
+          ],
+          "@BusinessGlossary.validValues": {
+            "FULL-TIME": "Full-time Assignment - Standard 40-hour work week with full benefits eligibility",
+            "PART-TIME": "Part-time Assignment - Less than 30 hours per week with prorated benefits",
+            "SEASONAL": "Seasonal Assignment - Recurring assignments during specific seasons or periods",
+            "PROJECT-BASED": "Project Assignment - Assignment tied to specific project deliverables and timeline",
+            "FIXED-TERM": "Fixed-term Assignment - Specific duration with predetermined end date"
+          },
+          "@BusinessGlossary.businessImpact": "Affects benefits eligibility, overtime calculations, and resource planning",
+          "type": "cds.String",
+          "length": 32
+        },
+        "companyCode": {
+          "@EndUserText.label": "Company Code",
+          "@Core.Description": "Company Code",
+          "@BusinessGlossary.definition": "Legal entity identifier representing the specific company or subsidiary within the corporate structure that employs the individual for this assignment",
+          "@BusinessGlossary.businessRules": [
+            "Must be valid legal entity in corporate structure",
+            "Determines legal employment relationship",
+            "Used for financial reporting and tax obligations",
+            "Required for all assignments"
+          ],
+          "@BusinessGlossary.validValues": {
+            "1000": "Parent Company - Main operating entity and headquarters",
+            "2000": "Technology Subsidiary - Software development and IT services division",
+            "3000": "International Operations - European subsidiary",
+            "4000": "Manufacturing Division - Production and operations entity",
+            "5000": "Services Company - Professional services and consulting arm"
+          },
+          "@BusinessGlossary.businessImpact": "Determines legal obligations, tax reporting, and financial consolidation",
+          "@BusinessGlossary.complianceRequirements": ["Corporate Tax Reporting", "Legal Entity Management"],
+          "type": "cds.String",
+          "length": 32
+        },
+        "costCenter": {
+          "@EndUserText.label": "Cost Center",
+          "@Core.Description": "Cost Center Assignment",
+          "@BusinessGlossary.definition": "Financial accounting unit that collects and tracks costs associated with this assignment for budgeting, financial reporting, and management accounting purposes",
+          "@BusinessGlossary.businessRules": [
+            "Must be active cost center in financial system",
+            "Used for budget allocation and tracking",
+            "Required for all assignments",
+            "Changes require finance approval"
+          ],
+          "@BusinessGlossary.examples": ["CC001-Engineering", "CC002-Sales", "CC003-Marketing"],
+          "@BusinessGlossary.businessImpact": "Determines budget allocation, cost tracking, and financial reporting",
+          "@BusinessGlossary.relatedProcesses": ["Budget Planning", "Cost Allocation", "Financial Reporting"],
+          "@BusinessGlossary.validationRules": "Must exist in Chart of Accounts and be active",
+          "type": "cds.String",
+          "length": 32
+        },
+        "department": {
+          "@EndUserText.label": "Department",
+          "@Core.Description": "Department Code",
+          "@BusinessGlossary.definition": "Functional organizational unit that groups employees with similar skills, responsibilities, or business functions for management and operational coordination",
+          "@BusinessGlossary.businessRules": [
+            "Must be valid department in organizational structure",
+            "Determines functional reporting relationships",
+            "Used for resource planning and skill management",
+            "Must align with division assignment"
+          ],
+          "@BusinessGlossary.validValues": {
+            "ENG": "Engineering - Software development, architecture, and technical delivery",
+            "SAL": "Sales - Revenue generation, client acquisition, and account management",
+            "MKT": "Marketing - Brand management, demand generation, and customer engagement",
+            "FIN": "Finance - Financial planning, accounting, and business analysis",
+            "HR": "Human Resources - Talent management, employee relations, and organizational development",
+            "OPS": "Operations - Business operations, process management, and service delivery",
+            "LEG": "Legal - Legal affairs, compliance, and risk management",
+            "IT": "Information Technology - IT infrastructure, security, and technical support"
+          },
+          "@BusinessGlossary.businessImpact": "Determines skill development paths, resource allocation, and functional expertise",
+          "type": "cds.String",
+          "length": 32
+        },
+        "division": {
+          "@EndUserText.label": "Division",
+          "@Core.Description": "Division Code",
+          "@BusinessGlossary.definition": "Highest level organizational unit below company level, representing major business segments, geographical regions, or strategic business units with distinct P&L responsibility",
+          "@BusinessGlossary.businessRules": [
+            "Must be valid division in corporate structure",
+            "Determines strategic business unit alignment",
+            "Used for P&L reporting and executive oversight",
+            "Changes require executive approval"
+          ],
+          "@BusinessGlossary.validValues": {
+            "TECH": "Technology Division - Software development, IT operations, and technical innovation",
+            "SALES": "Sales Division - Global sales organization and revenue generation",
+            "MKTG": "Marketing Division - Brand management, marketing operations, and customer experience",
+            "CORP": "Corporate Division - Finance, HR, Legal, and shared services",
+            "PROD": "Production Division - Manufacturing, operations, and supply chain",
+            "INTL": "International Division - Non-domestic operations and global expansion"
+          },
+          "@BusinessGlossary.businessImpact": "Determines P&L responsibility, strategic alignment, and executive reporting",
+          "type": "cds.String",
+          "length": 32
+        },
+        "jobCode": {
+          "@EndUserText.label": "Job Code",
+          "@Core.Description": "Job Classification Code",
+          "@BusinessGlossary.definition": "Standardized classification code that defines the specific role, responsibilities, required qualifications, and compensation framework for the position",
+          "@BusinessGlossary.businessRules": [
+            "Must exist in approved job catalog",
+            "Determines compensation band and grade level",
+            "Used for performance evaluation criteria",
+            "Links to skills and competency requirements"
+          ],
+          "@BusinessGlossary.examples": ["SE01-Software Engineer I", "MG01-Manager", "AN01-Business Analyst"],
+          "@BusinessGlossary.businessImpact": "Determines compensation ranges, career progression, and skill requirements",
+          "@BusinessGlossary.relatedProcesses": ["Compensation Planning", "Performance Management", "Career Development"],
+          "type": "cds.String",
+          "length": 32
+        },
+        "positionCode": {
+          "@EndUserText.label": "Position Code",
+          "@Core.Description": "Position Code",
+          "@BusinessGlossary.definition": "Unique identifier for a specific budgeted position within the organizational structure, representing a distinct role that can be filled by an employee",
+          "@BusinessGlossary.businessRules": [
+            "Must be approved budgeted position",
+            "Only one employee per position at a time",
+            "Used for headcount planning and budget control",
+            "Cannot be deleted while occupied"
+          ],
+          "@BusinessGlossary.businessImpact": "Controls headcount, enables succession planning, and supports organizational design",
+          "@BusinessGlossary.relatedProcesses": ["Headcount Planning", "Succession Planning", "Organizational Design"],
+          "type": "cds.String",
+          "length": 32
+        },
+        "managerId": {
+          "@EndUserText.label": "Manager ID",
+          "@Core.Description": "Direct Manager Person ID",
+          "@BusinessGlossary.definition": "Person ID of the direct supervisor responsible for day-to-day management, performance evaluation, and career development of the employee in this assignment",
+          "@BusinessGlossary.businessRules": [
+            "Must be valid active employee person ID",
+            "Cannot be self-referencing",
+            "Must have appropriate management authorization level",
+            "Required for non-executive positions"
+          ],
+          "@BusinessGlossary.businessImpact": "Establishes reporting hierarchy, approval authorities, and performance management relationships",
+          "@BusinessGlossary.relatedProcesses": ["Performance Management", "Approval Workflows", "Career Development"],
+          "type": "cds.String",
+          "length": 32
+        },
+        "employmentType": {
+          "@EndUserText.label": "Employment Type",
+          "@Core.Description": "Type of Employment",
+          "@BusinessGlossary.definition": "Legal classification of the employment relationship that determines rights, obligations, benefits eligibility, and regulatory compliance requirements",
+          "@BusinessGlossary.businessRules": [
+            "Must comply with local employment laws",
+            "Determines benefits eligibility and tax treatment",
+            "Used for regulatory reporting and compliance",
+            "Cannot conflict with assignment class"
+          ],
+          "@BusinessGlossary.validValues": {
+            "PERMANENT": "Permanent Employment - Ongoing employment relationship with no predetermined end date",
+            "TEMPORARY": "Temporary Employment - Fixed duration employment with specific end date",
+            "CONTRACT": "Contract Employment - Service agreement with defined deliverables and timeline",
+            "INTERN": "Internship - Educational program with temporary employment component",
+            "CONSULTANT": "Consultant - Independent contractor providing specialized services"
+          },
+          "@BusinessGlossary.complianceRequirements": ["Employment Law", "Tax Regulations", "Benefits Administration"],
+          "type": "cds.String",
+          "length": 32
+        },
+        "workLocation": {
+          "@EndUserText.label": "Work Location",
+          "@Core.Description": "Primary Work Location",
+          "@BusinessGlossary.definition": "The primary physical or virtual location where the employee performs their assigned duties, used for facilities management, local compliance, and emergency procedures",
+          "@BusinessGlossary.businessRules": [
+            "Must be from approved location master list",
+            "Determines local labor law compliance requirements",
+            "Used for emergency procedures and facilities planning",
+            "Affects travel and expense policy application"
+          ],
+          "@BusinessGlossary.validValues": {
+            "NYC": "New York City - Corporate headquarters and main office",
+            "LAX": "Los Angeles - West Coast operations center",
+            "CHI": "Chicago - Central region office and operations",
+            "ATL": "Atlanta - Southeast regional headquarters",
+            "SF": "San Francisco - Technology and innovation center",
+            "REMOTE": "Remote Work - Home-based with virtual collaboration",
+            "CLIENT": "Client Site - Temporary assignment at customer location",
+            "FIELD": "Field Work - Mobile work covering multiple locations"
+          },
+          "@BusinessGlossary.businessImpact": "Determines compliance requirements, facilities costs, and operational logistics",
+          "type": "cds.String",
+          "length": 32
+        },
+        "standardHours": {
+          "@EndUserText.label": "Standard Hours",
+          "@Core.Description": "Standard Working Hours per Week",
+          "@BusinessGlossary.definition": "The expected number of hours per week that the employee is scheduled to work under this assignment, used for calculating overtime, benefits eligibility, and resource planning",
+          "@BusinessGlossary.businessRules": [
+            "Must be between 0.01 and 60.00 hours per week",
+            "Determines full-time vs part-time status",
+            "Used for overtime calculations and benefits eligibility",
+            "Must align with assignment type"
+          ],
+          "@BusinessGlossary.validRanges": {
+            "Full-time": "37.5 - 40.0 hours per week",
+            "Part-time": "20.0 - 29.9 hours per week",
+            "Reduced Schedule": "10.0 - 19.9 hours per week"
+          },
+          "@BusinessGlossary.businessImpact": "Determines benefits eligibility, overtime calculations, and FTE reporting",
+          "@BusinessGlossary.complianceRequirements": ["Fair Labor Standards Act", "Benefits Administration"],
+          "type": "cds.Decimal",
+          "precision": 4,
+          "scale": 2
+        },
+        "workingTimeDirective": {
+          "@EndUserText.label": "Working Time Directive",
+          "@Core.Description": "Working Time Directive Code",
+          "@BusinessGlossary.definition": "Code that defines the specific work schedule pattern, time tracking requirements, and work-life balance policies applicable to this assignment",
+          "@BusinessGlossary.businessRules": [
+            "Must be valid working time policy in system",
+            "Determines time tracking and approval requirements",
+            "Used for compliance with working time regulations",
+            "Must align with standard hours and location"
+          ],
+          "@BusinessGlossary.validValues": {
+            "STD40": "Standard 40-hour week - Regular business hours with standard overtime rules",
+            "FLEX35": "Flexible 35-hour week - Flexible scheduling with core hours requirement",
+            "COMP40": "Compressed 40-hour week - Four 10-hour days or alternative schedule",
+            "PT20": "Part-time 20-hour week - Reduced schedule with prorated benefits",
+            "REMOTE": "Remote work directive - Home-based work with flexible hours"
+          },
+          "@BusinessGlossary.businessImpact": "Determines work scheduling flexibility and compliance requirements",
+          "type": "cds.String",
+          "length": 32
+        },
+        "payGroup": {
+          "@EndUserText.label": "Pay Group",
+          "@Core.Description": "Payroll Group Assignment",
+          "@BusinessGlossary.definition": "Classification that determines payroll processing cycle, payment methods, tax treatment, and compensation administration for this assignment",
+          "@BusinessGlossary.businessRules": [
+            "Must be valid payroll group in system",
+            "Determines pay frequency and processing cycle",
+            "Used for payroll administration and tax reporting",
+            "Cannot be changed during active pay period"
+          ],
+          "@BusinessGlossary.validValues": {
+            "EXEC": "Executive Pay Group - Monthly processing for senior leadership",
+            "MGMT": "Management Pay Group - Semi-monthly processing for managers",
+            "PROF": "Professional Pay Group - Bi-weekly processing for professionals",
+            "HOURLY": "Hourly Pay Group - Weekly processing for hourly employees",
+            "TEMP": "Temporary Pay Group - Weekly processing for temporary workers"
+          },
+          "@BusinessGlossary.businessImpact": "Determines payroll processing schedule and compensation delivery",
+          "@BusinessGlossary.relatedProcesses": ["Payroll Processing", "Tax Reporting", "Compensation Administration"],
+          "type": "cds.String",
+          "length": 32
+        },
+        "payGrade": {
+          "@EndUserText.label": "Pay Grade",
+          "@Core.Description": "Pay Grade Level",
+          "@BusinessGlossary.definition": "Hierarchical level within the compensation structure that defines the salary range, bonus eligibility, and career progression path for this assignment",
+          "@BusinessGlossary.businessRules": [
+            "Must be valid pay grade in compensation structure",
+            "Determines salary range minimums and maximums",
+            "Used for compensation planning and equity analysis",
+            "Must align with job code and organizational level"
+          ],
+          "@BusinessGlossary.validValues": {
+            "01-03": "Individual Contributor Levels - Entry to experienced professional",
+            "04-06": "Senior Professional Levels - Senior individual contributors and team leads",
+            "07-09": "Management Levels - First-line to senior management",
+            "10-12": "Executive Levels - Director to VP level positions",
+            "13-15": "Senior Executive Levels - SVP to C-suite positions"
+          },
+          "@BusinessGlossary.businessImpact": "Determines compensation ranges, bonus eligibility, and career progression",
+          "@BusinessGlossary.relatedProcesses": ["Compensation Planning", "Pay Equity Analysis", "Career Progression"],
+          "type": "cds.String",
+          "length": 32
+        },
+        "flsaStatus": {
+          "@EndUserText.label": "FLSA Status",
+          "@Core.Description": "Fair Labor Standards Act Status",
+          "@BusinessGlossary.definition": "Classification under the Fair Labor Standards Act that determines overtime eligibility, minimum wage requirements, and working time regulations compliance",
+          "@BusinessGlossary.businessRules": [
+            "Must comply with FLSA classification criteria",
+            "Determines overtime pay eligibility",
+            "Used for compliance reporting and audit",
+            "Must align with job duties and compensation level"
+          ],
+          "@BusinessGlossary.validValues": {
+            "EXEMPT": "Exempt Status - Not eligible for overtime pay, typically executive, administrative, or professional roles",
+            "NON-EXEMPT": "Non-Exempt Status - Eligible for overtime pay at 1.5x rate for hours over 40 per week",
+            "EXEMPT-COMPUTER": "Computer Professional Exempt - Specific exemption for computer professionals meeting criteria",
+            "EXEMPT-OUTSIDE-SALES": "Outside Sales Exempt - Exemption for outside sales professionals"
+          },
+          "@BusinessGlossary.complianceRequirements": ["Fair Labor Standards Act", "Department of Labor Regulations"],
+          "@BusinessGlossary.businessImpact": "Determines overtime calculations and compliance obligations",
+          "type": "cds.String",
+          "length": 32
+        },
+        "assignmentStatus": {
+          "@EndUserText.label": "Assignment Status",
+          "@Core.Description": "Current Assignment Status",
+          "@BusinessGlossary.definition": "Current lifecycle state of the assignment indicating whether it is active, inactive, or terminated, controlling system processing and business operations",
+          "@BusinessGlossary.businessRules": [
+            "Default value is 'A' for new assignments",
+            "Status changes trigger automated workflows",
+            "Inactive/Terminated assignments stop payroll processing",
+            "Only authorized users can change assignment status"
+          ],
+          "@BusinessGlossary.validValues": {
+            "A": "Active - Assignment is current and employee is performing duties",
+            "I": "Inactive - Assignment temporarily suspended (leave, disciplinary action)",
+            "T": "Terminated - Assignment permanently ended",
+            "S": "Suspended - Assignment on hold pending investigation or approval"
+          },
+          "@BusinessGlossary.statusTransitions": {
+            "A→I": "Temporary inactivation due to leave or suspension",
+            "A→T": "Assignment termination due to role end, transfer, or employment termination",
+            "A→S": "Assignment suspension pending investigation or approval",
+            "I→A": "Reactivation from leave or suspension resolution",
+            "I→T": "Termination while in inactive status",
+            "S→A": "Activation after suspension resolution",
+            "S→T": "Termination from suspended status"
+          },
+          "@BusinessGlossary.businessImpact": "Controls payroll processing, system access, and operational activities",
+          "type": "cds.String",
+          "length": 2
+        },
+        "isPrimary": {
+          "@EndUserText.label": "Primary Assignment",
+          "@Core.Description": "Indicates if this is the primary assignment",
+          "@BusinessGlossary.definition": "Boolean indicator that identifies the main assignment for employees with multiple concurrent assignments, determining primary reporting relationships and benefits administration",
+          "@BusinessGlossary.businessRules": [
+            "Each employee must have exactly one primary assignment",
+            "Primary assignment determines benefits eligibility",
+            "Used for organizational chart and reporting hierarchy",
+            "Cannot be false if employee has only one assignment"
+          ],
+          "@BusinessGlossary.businessImpact": "Determines benefits eligibility, organizational reporting, and primary compensation",
+          "@BusinessGlossary.relatedProcesses": ["Benefits Administration", "Organizational Reporting", "Performance Management"],
+          "type": "cds.Boolean"
+        },
+        "lastModifiedDateTime": {
+          "@EndUserText.label": "Last Modified",
+          "@Core.Description": "Last Modified Date and Time",
+          "@BusinessGlossary.definition": "System timestamp recording when any field in the assignment record was last updated, used for audit trails, data synchronization, and change tracking",
+          "@BusinessGlossary.businessRules": [
+            "Automatically updated by system on any change",
+            "Includes full timestamp with timezone information",
+            "Used for incremental data synchronization",
+            "Required for compliance audit trails"
+          ],
+          "@BusinessGlossary.usageContext": "Audit compliance, data integration, change management, and synchronization",
+          "type": "cds.Timestamp"
+        },
+        "createdDateTime": {
+          "@EndUserText.label": "Created Date",
+          "@Core.Description": "Record Creation Date and Time",
+          "@BusinessGlossary.definition": "System timestamp recording when the assignment record was initially created, providing data lineage and audit trail foundation",
+          "@BusinessGlossary.businessRules": [
+            "Set once during assignment creation",
+            "Cannot be modified after initial creation",
+            "Includes full timestamp with timezone information",
+            "Used for data lineage and historical analysis"
+          ],
+          "@BusinessGlossary.usageContext": "Data lineage, audit trails, historical analysis, and compliance reporting",
+          "type": "cds.Timestamp"
+        }
+      }
+    }
+  },
+  "businessGlossary": {
+    "@metadata": {
+      "version": "1.2",
+      "lastUpdated": "2024-01-15",
+      "approvedBy": "Chief Data Officer",
+      "reviewCycle": "Quarterly",
+      "nextReviewDate": "2024-04-15"
+    },
+    "businessTerms": {
+      "Assignment": {
+        "definition": "A specific job role or position that an employee holds within the organization, defining their responsibilities, compensation, and organizational relationships",
+        "synonyms": ["Job Assignment", "Position", "Role", "Job Placement"],
+        "category": "Human Resources",
+        "businessOwner": "CHRO",
+        "technicalOwner": "HR Systems Team",
+        "relatedTerms": ["Employee", "Position", "Organizational Structure"]
+      },
+      "PrimaryAssignment": {
+        "definition": "The main job assignment for an employee who may hold multiple roles, determining primary benefits, reporting relationships, and organizational placement",
+        "businessRules": [
+          "Each employee must have exactly one primary assignment",
+          "Primary assignment determines benefits calculation basis",
+          "Used for organizational chart representation"
+        ],
+        "businessImpact": "Critical for benefits administration and organizational reporting"
+      },
+      "CompensationStructure": {
+        "definition": "The systematic framework of pay grades, salary ranges, and compensation policies that govern employee pay within the organization",
+        "components": ["Pay Grade", "Pay Group", "FLSA Status", "Job Code"],
+        "businessPurpose": "Ensures fair, competitive, and legally compliant compensation practices"
+      },
+      "OrganizationalHierarchy": {
+        "definition": "The structured arrangement of divisions, departments, and reporting relationships that define authority, responsibility, and communication channels",
+        "levels": ["Division", "Department", "Team", "Individual"],
+        "businessPurpose": "Defines organizational structure, reporting relationships, and operational coordination"
+      },
+      "WorkArrangement": {
+        "definition": "The specific terms and conditions under which an employee performs their duties, including location, schedule, and time commitment",
+        "types": ["Full-time", "Part-time", "Remote", "On-site", "Hybrid"],
+        "businessImpact": "Affects productivity, employee satisfaction, and operational efficiency"
+      }
+    },
+    "businessProcesses": {
+      "assignmentCreation": {
+        "description": "Process for creating new job assignments when employees are hired, promoted, or transferred",
+        "steps": [
+          "Validate employee exists in workforce system",
+          "Verify organizational structure references",
+          "Assign unique assignment identifier",
+          "Set compensation and classification details",
+          "Establish reporting relationships",
+          "Configure payroll and benefits parameters"
+        ],
+        "keyFields": ["personIdExternal", "assignmentIdExternal", "startDate", "isPrimary"],
+        "stakeholders": ["HR Business Partner", "Hiring Manager", "Payroll", "Benefits Administration"],
+        "triggers": ["New hire", "Internal transfer", "Promotion", "Role change"]
+      },
+      "assignmentModification": {
+        "description": "Process for updating existing assignments due to organizational changes, promotions, or role modifications",
+        "approvals": ["Direct Manager", "HR Business Partner", "Compensation Team"],
+        "affectedFields": ["jobCode", "payGrade", "manager", "department", "division"],
+        "businessRules": [
+          "Changes affecting compensation require additional approval",
+          "Organizational changes must align with approved structure",
+          "Primary assignment changes require validation of benefits impact"
+        ]
+      },
+      "assignmentTermination": {
+        "description": "Process for ending assignments due to employee departure, role elimination, or organizational restructuring",
+        "steps": [
+          "Set assignment end date",
+          "Update assignment status to terminated",
+          "Process final payroll and benefits",
+          "Update organizational charts and reporting",
+          "Archive assignment data per retention policy"
+        ],
+        "stakeholders": ["HR Business Partner", "Manager", "Payroll", "Benefits", "IT Security"]
+      }
+    },
+    "dataGovernance": {
+      "dataClassification": {
+        "Public": ["Division", "Department", "Work Location"],
+        "Internal": ["Job Code", "Manager ID", "Assignment Type", "Standard Hours"],
+        "Confidential": ["Pay Grade", "Pay Group", "FLSA Status", "Cost Center"],
+        "Restricted": ["Person ID External", "Assignment ID External", "Compensation Details"]
+      },
+      "retentionPolicy": {
+        "activeAssignments": "Indefinite retention while assignment is active",
+        "terminatedAssignments": "10 years after assignment termination",
+        "archivalProcess": "Move to archive system after retention period expires",
+        "complianceRequirements": "Must support audit trails and legal discovery requests"
+      },
+      "accessControl": {
+        "HR-Administrator": "Full read/write access to all assignment fields",
+        "HR-BusinessPartner": "Read/write access to assignments in supported organizations",
+        "Manager": "Read access to direct report assignments and limited update capabilities",
+        "Payroll-Administrator": "Read access to payroll-relevant fields for processing",
+        "Employee": "Read access to own assignment information through self-service",
+        "System-Integration": "Automated read/write access for approved system integrations"
+      },
+      "dataQuality": {
+        "mandatoryFields": ["personIdExternal", "assignmentIdExternal", "startDate", "assignmentStatus"],
+        "validationRules": [
+          "Person ID must exist in workforce master data",
+          "Organizational references must be valid and active",
+          "Dates must be logically consistent",
+          "Primary assignment rules must be enforced"
+        ],
+        "dataIntegrity": [
+          "Referential integrity with workforce and organizational master data",
+          "Business rule validation for assignment relationships",
+          "Audit trail maintenance for all changes"
+        ]
+      }
+    },
+    "compliance": {
+      "regulations": {
+        "FLSA": {
+          "applicableFields": ["flsaStatus", "standardHours", "assignmentType"],
+          "requirements": ["Proper exempt/non-exempt classification", "Overtime calculation compliance", "Record keeping requirements"],
+          "auditRequirements": "Annual review of FLSA classifications and compliance"
+        },
+        "EqualPayAct": {
+          "applicableFields": ["payGrade", "jobCode", "department", "division"],
+          "requirements": ["Pay equity analysis", "Job classification consistency", "Compensation transparency"],
+          "reporting": "Annual pay equity analysis and reporting required"
+        },
+        "TaxReporting": {
+          "applicableFields": ["companyCode", "payGroup", "workLocation", "employmentType"],
+          "requirements": ["Proper tax jurisdiction determination", "Employment classification accuracy", "Payroll tax compliance"],
+          "frequency": "Quarterly and annual tax reporting obligations"
+        },
+        "AuditCompliance": {
+          "applicableFields": ["All fields"],
+          "requirements": ["Complete audit trail maintenance", "Change documentation", "Access control logging"],
+          "retention": "7 years minimum for audit trail data"
+        }
+      }
+    },
+    "businessRules": {
+      "assignmentIntegrity": [
+        "Each employee must have at least one assignment",
+        "Only one primary assignment per employee at any time",
+        "Assignment dates cannot overlap for same position",
+        "Assignment status must align with employee status"
+      ],
+      "organizationalConsistency": [
+        "All organizational references must be valid and active",
+        "Department must belong to assigned division",
+        "Cost center must align with organizational assignment",
+        "Manager must be in appropriate organizational level"
+      ],
+      "compensationCompliance": [
+        "Pay grade must align with job code requirements",
+        "FLSA status must match job duties and pay level",
+        "Standard hours must align with assignment type",
+        "Pay group must be appropriate for employment classification"
+      ]
+    }
+  },
+  "meta": {
+    "creator": "SuccessFactors",
+    "businessGlossaryVersion": "1.2",
+    "dataGovernanceFramework": "Enterprise Data Management Policy v2.1",
+    "complianceFramework": "HR Compliance Management Framework v1.5",
+    "version": {
+      "csn": "2.0"
+    }
+  },
+  "$version": "2.0"
+}

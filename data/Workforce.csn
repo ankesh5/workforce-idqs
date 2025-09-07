@@ -1,0 +1,463 @@
+
+  "definitions": {
+    "successfactors.workforce": {
+      "@EndUserText.label": "SuccessFactors Workforce Service",
+      "@BusinessGlossary.description": "Core workforce management service providing employee master data and organizational assignments for talent management processes",
+      "@BusinessGlossary.businessOwner": "Chief Human Resources Officer",
+      "@BusinessGlossary.dataClassification": "Confidential",
+      "kind": "service"
+    },
+    "successfactors.workforce.Workforce": {
+      "@EndUserText.label": "Workforce",
+      "@UI.HeaderInfo.TypeName": "Employee",
+      "@UI.HeaderInfo.TypeNamePlural": "Employees",
+      "@BusinessGlossary.definition": "Master record representing an individual employed by or associated with the organization, containing personal, contact, and organizational information",
+      "@BusinessGlossary.businessProcess": ["Employee Onboarding", "Workforce Planning", "Talent Management", "Payroll Processing"],
+      "@BusinessGlossary.dataRetention": "7 years after employment termination",
+      "@BusinessGlossary.complianceRequirements": ["GDPR", "SOX", "Equal Employment Opportunity"],
+      "kind": "entity",
+      "elements": {
+        "personIdExternal": {
+          "@EndUserText.label": "Person ID External",
+          "@Core.Description": "External Person Identifier",
+          "@BusinessGlossary.definition": "Unique external identifier for an individual person, typically sourced from HRIS or government systems. Serves as the primary key for cross-system integration",
+          "@BusinessGlossary.businessRules": [
+            "Must be unique across all systems",
+            "Cannot be changed once assigned",
+            "Format follows pattern: EMP followed by 6 digits"
+          ],
+          "@BusinessGlossary.dataSource": "Human Resources Information System",
+          "@BusinessGlossary.examples": ["EMP000001", "EMP123456"],
+          "type": "cds.String",
+          "length": 32,
+          "key": true,
+          "@Common.FieldControl": "#ReadOnly"
+        },
+        "userId": {
+          "@EndUserText.label": "User ID",
+          "@Core.Description": "System User ID",
+          "@BusinessGlossary.definition": "Unique system login identifier used for authentication and authorization across enterprise applications",
+          "@BusinessGlossary.businessRules": [
+            "Must be unique within the organization",
+            "Cannot contain special characters except underscore and period",
+            "Minimum 4 characters, maximum 100 characters",
+            "Typically follows firstname.lastname format"
+          ],
+          "@BusinessGlossary.relatedSystems": ["Active Directory", "SAP", "Workday"],
+          "@BusinessGlossary.examples": ["john.smith", "mary.johnson", "robert.brown"],
+          "type": "cds.String",
+          "length": 100,
+          "key": true
+        },
+        "startDate": {
+          "@EndUserText.label": "Start Date",
+          "@Core.Description": "Employment Start Date",
+          "@BusinessGlossary.definition": "The official date when the employee's relationship with the organization begins, used for calculating tenure, benefits eligibility, and anniversary dates",
+          "@BusinessGlossary.businessRules": [
+            "Cannot be in the future beyond 90 days",
+            "Must be on or after company establishment date",
+            "Used for benefits eligibility calculations",
+            "Determines probationary period end date"
+          ],
+          "@BusinessGlossary.businessImpact": "Affects benefits enrollment, vacation accrual, and performance review cycles",
+          "type": "cds.Date",
+          "key": true
+        },
+        "firstName": {
+          "@EndUserText.label": "First Name",
+          "@Core.Description": "Employee First Name",
+          "@BusinessGlossary.definition": "Legal first name of the employee as it appears on government-issued identification documents",
+          "@BusinessGlossary.businessRules": [
+            "Must match legal documentation",
+            "No numbers or special characters allowed",
+            "Required field for all employees",
+            "Updates require HR approval and documentation"
+          ],
+          "@BusinessGlossary.privacyLevel": "PII - Personal Identifiable Information",
+          "@BusinessGlossary.usageContext": "Payroll, Benefits, Legal Documentation",
+          "type": "cds.String",
+          "length": 128
+        },
+        "lastName": {
+          "@EndUserText.label": "Last Name",
+          "@Core.Description": "Employee Last Name",
+          "@BusinessGlossary.definition": "Legal surname or family name of the employee as it appears on government-issued identification documents",
+          "@BusinessGlossary.businessRules": [
+            "Must match legal documentation",
+            "No numbers or special characters allowed",
+            "Required field for all employees",
+            "Updates require HR approval and documentation"
+          ],
+          "@BusinessGlossary.privacyLevel": "PII - Personal Identifiable Information",
+          "@BusinessGlossary.usageContext": "Payroll, Benefits, Legal Documentation",
+          "type": "cds.String",
+          "length": 128
+        },
+        "middleName": {
+          "@EndUserText.label": "Middle Name",
+          "@Core.Description": "Employee Middle Name",
+          "@BusinessGlossary.definition": "Legal middle name or initial of the employee, optional field used for formal documentation and identification purposes",
+          "@BusinessGlossary.businessRules": [
+            "Optional field",
+            "Must match legal documentation if provided",
+            "Can be full name or initial"
+          ],
+          "@BusinessGlossary.privacyLevel": "PII - Personal Identifiable Information",
+          "type": "cds.String",
+          "length": 128
+        },
+        "displayName": {
+          "@EndUserText.label": "Display Name",
+          "@Core.Description": "Full Display Name",
+          "@BusinessGlossary.definition": "Formatted full name used for display purposes in applications, reports, and user interfaces. Automatically generated from first, middle, and last name components",
+          "@BusinessGlossary.businessRules": [
+            "System-generated field",
+            "Format: First Middle Last",
+            "Updates automatically when name components change",
+            "Used in organizational charts and directories"
+          ],
+          "@BusinessGlossary.calculationLogic": "CONCAT(firstName, ' ', COALESCE(middleName + ' ', ''), lastName)",
+          "type": "cds.String",
+          "length": 765
+        },
+        "email": {
+          "@EndUserText.label": "Email",
+          "@Core.Description": "Primary Email Address",
+          "@BusinessGlossary.definition": "Primary corporate email address used for business communications, system notifications, and official correspondence",
+          "@BusinessGlossary.businessRules": [
+            "Must be valid email format",
+            "Must use corporate domain",
+            "Unique within organization",
+            "Required for all active employees"
+          ],
+          "@BusinessGlossary.validDomains": ["@company.com", "@subsidiary.com"],
+          "@BusinessGlossary.usageContext": "Business Communications, System Notifications, Password Recovery",
+          "type": "cds.String",
+          "length": 100
+        },
+        "businessPhone": {
+          "@EndUserText.label": "Business Phone",
+          "@Core.Description": "Business Phone Number",
+          "@BusinessGlossary.definition": "Primary business telephone number including desk phone, mobile, or VoIP number used for professional communications",
+          "@BusinessGlossary.businessRules": [
+            "Must include country and area code",
+            "Format: +1-XXX-XXX-XXXX",
+            "Can be desk phone or mobile",
+            "Required for client-facing roles"
+          ],
+          "@BusinessGlossary.formats": ["+1-555-123-4567", "555.123.4567", "(555) 123-4567"],
+          "type": "cds.String",
+          "length": 32
+        },
+        "division": {
+          "@EndUserText.label": "Division",
+          "@Core.Description": "Employee Division",
+          "@BusinessGlossary.definition": "High-level organizational unit representing a major business segment or geographical region within the company structure",
+          "@BusinessGlossary.businessRules": [
+            "Must be from approved division list",
+            "Determines reporting hierarchy",
+            "Used for budget allocation and P&L reporting",
+            "Changes require executive approval"
+          ],
+          "@BusinessGlossary.validValues": {
+            "TECH": "Technology Division - Software development and IT operations",
+            "SALES": "Sales Division - Revenue generation and client acquisition",
+            "MKTG": "Marketing Division - Brand management and customer engagement",
+            "CORP": "Corporate Division - Finance, HR, Legal, and administrative functions",
+            "PROD": "Production Division - Manufacturing and operations",
+            "R&D": "Research & Development - Innovation and product development"
+          },
+          "@BusinessGlossary.businessImpact": "Affects budget codes, performance metrics, and strategic planning",
+          "type": "cds.String",
+          "length": 32
+        },
+        "department": {
+          "@EndUserText.label": "Department",
+          "@Core.Description": "Employee Department",
+          "@BusinessGlossary.definition": "Specific functional unit within a division responsible for particular business activities or expertise areas",
+          "@BusinessGlossary.businessRules": [
+            "Must be valid department code",
+            "Must align with assigned division",
+            "Determines direct management hierarchy",
+            "Used for resource planning and cost allocation"
+          ],
+          "@BusinessGlossary.validValues": {
+            "ENG": "Engineering - Software development and technical architecture",
+            "SAL": "Sales - Direct sales and account management",
+            "MKT": "Marketing - Marketing campaigns and brand management", 
+            "FIN": "Finance - Financial planning, accounting, and analysis",
+            "HR": "Human Resources - Talent management and employee relations",
+            "OPS": "Operations - Business operations and process management",
+            "LEG": "Legal - Legal affairs and compliance",
+            "IT": "Information Technology - IT infrastructure and support"
+          },
+          "type": "cds.String",
+          "length": 32
+        },
+        "title": {
+          "@EndUserText.label": "Job Title",
+          "@Core.Description": "Employee Job Title",
+          "@BusinessGlossary.definition": "Official position title reflecting the employee's role, responsibilities, and level within the organizational hierarchy",
+          "@BusinessGlossary.businessRules": [
+            "Must be from approved job title catalog",
+            "Reflects compensation grade and authority level",
+            "Used for organizational charts and external communications",
+            "Changes require manager and HR approval"
+          ],
+          "@BusinessGlossary.categories": [
+            "Executive (C-Level, VP)",
+            "Senior Management (Director, Senior Director)", 
+            "Management (Manager, Senior Manager)",
+            "Individual Contributor (Analyst, Specialist, Engineer)",
+            "Support (Coordinator, Assistant, Associate)"
+          ],
+          "@BusinessGlossary.usageContext": "Performance Management, Compensation Planning, Organizational Design",
+          "type": "cds.String",
+          "length": 128
+        },
+        "manager": {
+          "@EndUserText.label": "Manager",
+          "@Core.Description": "Manager Person ID",
+          "@BusinessGlossary.definition": "Person ID of the direct manager responsible for performance management, career development, and day-to-day supervision of the employee",
+          "@BusinessGlossary.businessRules": [
+            "Must be valid active employee person ID",
+            "Cannot be self-referencing",
+            "Must be in same or higher organizational level",
+            "Required for all non-executive employees"
+          ],
+          "@BusinessGlossary.businessImpact": "Determines approval workflows, performance review cycles, and reporting relationships",
+          "@BusinessGlossary.relatedProcesses": ["Performance Management", "Leave Approval", "Expense Approval"],
+          "type": "cds.String",
+          "length": 32
+        },
+        "hr": {
+          "@EndUserText.label": "HR Representative",
+          "@Core.Description": "HR Representative Person ID",
+          "@BusinessGlossary.definition": "Person ID of the assigned Human Resources Business Partner or representative responsible for HR support and employee relations",
+          "@BusinessGlossary.businessRules": [
+            "Must be valid HR employee person ID",
+            "Typically assigned by geography or division",
+            "Can support multiple employees",
+            "Required for all employees"
+          ],
+          "@BusinessGlossary.responsibilities": [
+            "Employee relations and conflict resolution",
+            "Policy interpretation and guidance",
+            "Performance improvement planning",
+            "Career development support"
+          ],
+          "type": "cds.String",
+          "length": 32
+        },
+        "location": {
+          "@EndUserText.label": "Location",
+          "@Core.Description": "Work Location",
+          "@BusinessGlossary.definition": "Primary physical work location or office where the employee is based, used for facilities management, emergency procedures, and local compliance",
+          "@BusinessGlossary.businessRules": [
+            "Must be from approved location master list",
+            "Determines local labor laws and compliance requirements",
+            "Used for emergency evacuation procedures",
+            "Affects travel and expense policies"
+          ],
+          "@BusinessGlossary.validValues": {
+            "NYC": "New York City Office - 123 Main St, New York, NY 10001",
+            "LAX": "Los Angeles Office - 456 Sunset Blvd, Los Angeles, CA 90028",
+            "CHI": "Chicago Office - 789 Michigan Ave, Chicago, IL 60611",
+            "SF": "San Francisco Office - 321 Market St, San Francisco, CA 94105",
+            "REMOTE": "Remote Worker - Home-based with occasional office visits",
+            "CLIENT": "Client Site - Temporary assignment at customer location"
+          },
+          "type": "cds.String",
+          "length": 32
+        },
+        "timeZone": {
+          "@EndUserText.label": "Time Zone",
+          "@Core.Description": "Employee Time Zone",
+          "@BusinessGlossary.definition": "Standard time zone for the employee's primary work location, used for scheduling, meeting coordination, and work hour tracking",
+          "@BusinessGlossary.businessRules": [
+            "Must use standard IANA time zone format",
+            "Automatically set based on work location",
+            "Can be manually overridden for remote workers",
+            "Used for calendar and scheduling systems"
+          ],
+          "@BusinessGlossary.validValues": [
+            "America/New_York - Eastern Time",
+            "America/Chicago - Central Time", 
+            "America/Denver - Mountain Time",
+            "America/Los_Angeles - Pacific Time",
+            "Europe/London - Greenwich Mean Time",
+            "Europe/Berlin - Central European Time",
+            "Asia/Tokyo - Japan Standard Time"
+          ],
+          "type": "cds.String",
+          "length": 64
+        },
+        "status": {
+          "@EndUserText.label": "Employment Status",
+          "@Core.Description": "Current Employment Status",
+          "@BusinessGlossary.definition": "Current state of the employee's relationship with the organization, indicating their active status and employment standing",
+          "@BusinessGlossary.businessRules": [
+            "Default value is 'A' for new hires",
+            "Status changes trigger workflow notifications",
+            "Inactive/Terminated employees lose system access",
+            "Only HR can change employment status"
+          ],
+          "@BusinessGlossary.validValues": {
+            "A": "Active - Currently employed and working",
+            "I": "Inactive - Temporarily not working (leave of absence, suspension)",
+            "T": "Terminated - Employment relationship ended",
+            "R": "Retired - Left organization through retirement program",
+            "D": "Deceased - Employment ended due to death"
+          },
+          "@BusinessGlossary.statusTransitions": {
+            "A→I": "Leave of absence, suspension, or temporary inactive",
+            "A→T": "Termination (voluntary or involuntary)",
+            "A→R": "Retirement",
+            "I→A": "Return from leave or reactivation",
+            "I→T": "Termination while on leave"
+          },
+          "@BusinessGlossary.businessImpact": "Controls system access, payroll processing, and benefits eligibility",
+          "type": "cds.String",
+          "length": 2
+        },
+        "endDate": {
+          "@EndUserText.label": "End Date",
+          "@Core.Description": "Employment End Date",
+          "@BusinessGlossary.definition": "Official date when the employee's relationship with the organization ends, used for final payroll, benefits termination, and compliance reporting",
+          "@BusinessGlossary.businessRules": [
+            "Only populated for terminated/retired employees",
+            "Must be greater than or equal to start date",
+            "Cannot be in the future beyond current date",
+            "Triggers benefits termination and final payroll"
+          ],
+          "@BusinessGlossary.businessImpact": "Determines COBRA eligibility, final pay calculations, and asset return requirements",
+          "@BusinessGlossary.relatedProcesses": ["Offboarding", "Final Payroll", "Benefits Termination", "Asset Recovery"],
+          "type": "cds.Date"
+        },
+        "lastModifiedDateTime": {
+          "@EndUserText.label": "Last Modified",
+          "@Core.Description": "Last Modified Date and Time",
+          "@BusinessGlossary.definition": "System timestamp indicating when the employee record was last updated, used for audit trails and data synchronization",
+          "@BusinessGlossary.businessRules": [
+            "Automatically updated by system on any field change",
+            "Includes date and time with timezone",
+            "Used for incremental data synchronization",
+            "Required for audit compliance"
+          ],
+          "@BusinessGlossary.usageContext": "Data Integration, Audit Trails, Change Tracking",
+          "type": "cds.Timestamp"
+        },
+        "createdDateTime": {
+          "@EndUserText.label": "Created Date",
+          "@Core.Description": "Record Creation Date and Time",
+          "@BusinessGlossary.definition": "System timestamp indicating when the employee record was initially created in the system",
+          "@BusinessGlossary.businessRules": [
+            "Set once during record creation",
+            "Cannot be modified after creation",
+            "Includes date and time with timezone",
+            "Used for data lineage and audit purposes"
+          ],
+          "@BusinessGlossary.usageContext": "Audit Trails, Data Lineage, Record History",
+          "type": "cds.Timestamp"
+        }
+      }
+    }
+  },
+  "businessGlossary": {
+    "@metadata": {
+      "version": "1.0",
+      "lastUpdated": "2024-01-15",
+      "approvedBy": "Chief Data Officer",
+      "reviewCycle": "Quarterly"
+    },
+    "businessTerms": {
+      "Employee": {
+        "definition": "An individual who performs work or services for the organization under an employment contract and receives compensation",
+        "synonyms": ["Worker", "Team Member", "Staff Member", "Personnel"],
+        "category": "Human Resources",
+        "businessOwner": "CHRO",
+        "technicalOwner": "HR Systems Team"
+      },
+      "PersonID": {
+        "definition": "Unique identifier assigned to each individual in the organization's systems",
+        "businessRules": [
+          "One person can have multiple assignments but only one Person ID",
+          "Person ID persists throughout entire relationship with organization",
+          "Used as primary key for all HR-related systems"
+        ]
+      },
+      "OrganizationalHierarchy": {
+        "definition": "The structured arrangement of management levels and reporting relationships within the organization",
+        "components": ["Division", "Department", "Team", "Individual"],
+        "businessPurpose": "Defines authority, responsibility, and communication channels"
+      }
+    },
+    "dataGovernance": {
+      "dataClassification": {
+        "Public": ["Division", "Department", "Job Title"],
+        "Internal": ["Work Location", "Business Phone", "Manager"],
+        "Confidential": ["Personal Names", "Email", "Employee Status"],
+        "Restricted": ["Person ID", "Start Date", "End Date"]
+      },
+      "retentionPolicy": {
+        "activeEmployees": "Indefinite retention while employed",
+        "terminatedEmployees": "7 years after termination",
+        "archivalProcess": "Move to archive system after retention period"
+      },
+      "accessControl": {
+        "HR-Full": "Complete read/write access to all fields",
+        "Manager": "Read access to direct reports' non-sensitive data",
+        "Employee": "Read access to own public and internal data",
+        "System": "Automated read/write for integration purposes"
+      }
+    },
+    "compliance": {
+      "regulations": {
+        "GDPR": {
+          "applicableFields": ["firstName", "lastName", "email", "personIdExternal"],
+          "requirements": ["Right to be forgotten", "Data portability", "Consent management"],
+          "retentionLimits": "Data must be deleted upon valid erasure request"
+        },
+        "SOX": {
+          "applicableProcesses": ["Payroll", "Financial Reporting", "Audit Trails"],
+          "requirements": ["Segregation of duties", "Audit trail maintenance", "Change management"],
+          "controls": "All changes must be logged with user identification"
+        },
+        "EEO": {
+          "applicableFields": ["Division", "Department", "Title", "Manager"],
+          "requirements": ["Equal opportunity monitoring", "Demographic reporting", "Bias prevention"],
+          "reporting": "Quarterly demographic analysis required"
+        }
+      }
+    },
+    "businessProcesses": {
+      "employeeOnboarding": {
+        "description": "Process of integrating new employees into the organization",
+        "steps": [
+          "Create person record with basic information",
+          "Assign organizational placement (division, department)",
+          "Set up manager relationship and reporting structure",
+          "Configure system access and email",
+          "Assign HR business partner"
+        ],
+        "keyFields": ["personIdExternal", "startDate", "manager", "status"],
+        "stakeholders": ["HR", "Hiring Manager", "IT", "Facilities"]
+      },
+      "organizationalChange": {
+        "description": "Process for managing employee transfers, promotions, and reorganizations",
+        "triggers": ["Promotion", "Transfer", "Reorganization", "Manager Change"],
+        "approvals": ["Current Manager", "New Manager", "HR Business Partner"],
+        "affectedFields": ["division", "department", "title", "manager", "location"]
+      }
+    }
+  },
+  "meta": {
+    "creator": "SuccessFactors",
+    "businessGlossaryVersion": "1.0",
+    "dataGovernanceFramework": "Enterprise Data Management Policy v2.1",
+    "version": {
+      "csn": "2.0"
+    }
+  },
+  "$version": "2.0"
+}
