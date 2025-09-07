@@ -1,0 +1,16 @@
+FROM jupyter/pyspark-notebook:python-3.11
+
+WORKDIR /home/jovyan/work
+
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+ENV PYTHONPATH=/home/jovyan/work/src
+
+COPY src/ /home/jovyan/work/src/
+COPY data/ /home/jovyan/work/data/
+COPY demo_hr_analytics.ipynb /home/jovyan/work/demo_hr_analytics.ipynb
+
+EXPOSE 8000
+
+CMD ["uvicorn", "workforce_api:app", "--host", "0.0.0.0", "--port", "8000"]
